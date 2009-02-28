@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Github Widget
-Plugin URI: http://ralree.com
+Plugin URI: http://www.ralree.com/2009/02/28/github-widget-for-wordpressgithub-widget-for-wordpress/
 Description: Github in your sidebar, dawg!
 Author: Erik Gregg
 Version: 1.3.0
