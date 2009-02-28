@@ -27,11 +27,12 @@ var GitHubBadge = GitHubBadge || {};
 GitHubBadge.buildUserBadge = function(username) {
   (function($){
     var title = ("GITHUB_TITLE" in window && GITHUB_TITLE) || 'My projects';
+    var sf = ("GITHUB_SHOWFOOTER" in window) ? GITHUB_SHOWFOOTER : true;
     $('#github-badge')
       .empty()
       .buildHeader(title, username)
-      .buildBody(username)
-      .buildFooter();
+      .buildBody(username);
+    if(sf) $('#github-badge').buildFooter();
   })(jQuery);
   GitHubBadge.requestUserInfo(username);
 };
@@ -106,6 +107,11 @@ GitHubBadge.requestUserInfo = function(username) {
     return this.append($("<div class='body'>loading...</div>"));
   };
 
+  $.fn.beforeHeader = function() {
+    var head = ("GITHUB_BEFORE_HEADER" in window) ? GITHUB_BEFORE_HEADER : "";
+    return this.append($(head));
+  };
+
   $.fn.buildHeader = function(title, username) {
     var head = ("GITHUB_HEAD" in window) ? GITHUB_HEAD : "div";
     var template = $.template(
@@ -115,12 +121,18 @@ GitHubBadge.requestUserInfo = function(username) {
     return this.append(template, { title: title, username: username });
   };
 
+  $.fn.afterHeader = function() {
+    var head = ("GITHUB_AFTER_HEADER" in window) ? GITHUB_AFTER_HEADER : "";
+    return this.append($(head));
+  };
+
   $.fn.buildFooter = function() {
     return this.append($(
       "<div class='git-footer'>"
-        + "<a href='http://drnic.github.com/github-badges'>GitHub Badge</a>"
+        + "<a href='http://github.com/hank/github-widget'>GitHub Widget</a>"
         + " | "
-        + "Written by <a href='http://drnicwilliams.com'>Dr Nic</a>"
+        + "Written by <a href='http://ralree.com'>Hank</a>, "
+        + "<a href='http://drnicwilliams.com'>Dr Nic</a>"
       + "</div>"
       + "</fieldset>"
       ));
