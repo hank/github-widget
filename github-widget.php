@@ -7,26 +7,93 @@ Author: Erik Gregg
 Version: 1
 Author URI: http://ralree.com
 */
+$GITHUB_DEFAULTS = array(  
+    'user' => 'hank',
+    'listlen' => '3',
+    'headerelem' => 'h3',
+    'theme' => "white",
+    'showall' => "Show all",
+    );  
 
-function widget_github() {
-$x = WP_PLUGIN_URL.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__)); 
+function activate() {
+  global $GITHUB_DEFAULTS;
+  $options = $GITHUB_DEFAULTS;
+  if(!get_option('github_widget', $options)) {
+    add_option('github_widget', $options);
+  } else {
+    update_option('github_widget', $options);
+  }
+}
+
+function deactivate() {
+  delete_option('github_widget');
+}
+
+function widget ($args) {
+  extract($args);
+  $options = get_option("widget_github");  
+  $x = WP_PLUGIN_URL.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__)); 
   echo <<<EOCODE
-<div id="github-badge" class="widget widget-text"></div>
-<script type="text/javascript" charset="utf-8">
-  GITHUB_USERNAME="hank";
-  GITHUB_LIST_LENGTH=3;
-  GITHUB_HEAD="h3"; // e.g. change to "h2" for wordpress sidebars
-  GITHUB_THEME="white"; // try 'black'
-  GITHUB_SHOW_ALL = "Show all";
+    $before_widget
+    <div id="github-badge">$before_title
+    </div>
+    $after_title
+    $after_widget
+    <script type="text/javascript" charset="utf-8">
+    GITHUB_USERNAME="{$options['user']}";
+  GITHUB_LIST_LENGTH={$options['listlen']};
+  GITHUB_HEAD="{$options['headerelem']}"; // e.g. change to "h2" for wordpress sidebars
+  GITHUB_THEME="{$options['theme']}"; // try 'black'
+  GITHUB_SHOW_ALL = "{$options['showall']}";
   delete window.jQuery; // Dirty hack to make crap work
-</script>
-<script src="${x}dist/github-badge-launcher.js" type="text/javascript"></script>
+  </script>
+    <script src="${x}dist/github-badge-launcher.js" type="text/javascript"></script>
 EOCODE;
 }
 
-function myGithub_init()
+function register()
 {
-  register_sidebar_widget(__('Github'), 'widget_github');
+  register_sidebar_widget('Github', 'widget');
+  register_widget_control('Github', 'control');
 }
-add_action("plugins_loaded", "myGithub_init");
+
+function control() {
+  global $GITHUB_DEFAULTS;
+  $options = get_option("widget_github");  
+
+  if (!is_array( $options ))  
+  {  
+    $options = $GITHUB_DEFAULTS;
+  }  
+
+  if ($_POST['github-submit']) {  
+    $options['user'] = htmlspecialchars($_POST['github-user']);  
+    $options['listlen'] = htmlspecialchars($_POST['github-listlen']);  
+    $options['headerelem'] = htmlspecialchars($_POST['github-headerelem']);  
+    $options['theme'] = htmlspecialchars($_POST['github-theme']);  
+    $options['showall'] = htmlspecialchars($_POST['github-showall']);  
+
+    update_option("widget_github", $options);  
+  }
+  ?>  
+    <p><label for="github-user"><?php _e('User:'); ?> <input class="widefat" id="github-user" name="github-user" type="text" value="<?php echo $options['user']; ?>" /></label></p>
+    <p><label for="github-listlen"><?php _e('Number of projects to show:'); ?> <input class="widefat" id="github-listlen" name="github-listlen" type="text" value="<?php echo $options['listlen']; ?>" /></label></p>
+    <p><label for="github-headerelem"><?php _e('Header Element Type:'); ?> <input class="widefat" id="github-headerelem" name="github-headerelem" type="text" value="<?php echo $options['headerelem']; ?>" /></label></p>
+    <p>
+    <label for="github-theme"><?php _e( 'Theme:' ); ?>
+    <select name="github-theme" id="github-theme" class="widefat">
+    <option value="white"<?php selected( $options['theme'], 'white' ); ?>><?php _e('White'); ?></option>
+    <option value="black"<?php selected( $options['theme'], 'black' ); ?>><?php _e('Black'); ?></option>
+    </select>
+    </label>
+    </p>
+    <p><label for="github-showall"><?php _e('Show All Text:'); ?> <input class="widefat" id="github-showall" name="github-showall" type="text" value="<?php echo $options['showall']; ?>" /></label></p>
+    <input type="hidden" id="github-submit" name="github-submit" value="1" />
+    <?php  
+}
+// ACTIONS
+add_action("widgets_init", "register");
+register_activation_hook( __FILE__, 'activate');
+register_deactivation_hook( __FILE__, 'deactivate');
+
 ?>
